@@ -6,7 +6,7 @@
 * Related Document : See README.md
 *
 *******************************************************************************
-* (c) 2024-2025, Infineon Technologies AG, or an affiliate of Infineon
+* (c) 2024-2026, Infineon Technologies AG, or an affiliate of Infineon
 * Technologies AG. All rights reserved.
 * This software, associated documentation and materials ("Software") is
 * owned by Infineon Technologies AG or one of its affiliates ("Infineon")
@@ -17,7 +17,7 @@
 * agreement applies, then any use, reproduction, modification, translation, or
 * compilation of this Software is prohibited without the express written
 * permission of Infineon.
-* 
+*
 * Disclaimer: UNLESS OTHERWISE EXPRESSLY AGREED WITH INFINEON, THIS SOFTWARE
 * IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
 * INCLUDING, BUT NOT LIMITED TO, ALL WARRANTIES OF NON-INFRINGEMENT OF
@@ -86,16 +86,12 @@
 #define CY_FLASH_BASE               0x70000000UL
 #define MEM_SLOT_NUM                (0u)      /* Slot number of the memory to use */
 #define SECTOR_ADDR                 0x40000U  /* Offset to the start of external memory that belongs to the sector for which size is returned. */
-#define SMIF_DATA_OCTAL             (0x08U)
-#define SMIF_DATA_QUAD              (0x04U)
-#define DATA_WIDTH_PINS             0x04U
-#define IFX_EPB_SMIF_TIMEOUT_MS     (8000U)
 
-#if defined (OTA_USE_EXTERNAL_FLASH)
-#define CY_FLASH_ERASE_SIZE         0x40000UL /* Erase Size for External Flash and XIP area */
+#ifdef CYBSP_OSPI_D7_ENABLED
+#define MTB_CHIP_SELECT             MTB_SERIAL_MEMORY_CHIP_SELECT_0
 #else
-#define CY_FLASH_ERASE_SIZE         0x200UL /* Erase Size for Internal RRAM area */
-#endif /*OTA_USE_EXTERNAL_FLASH */
+#define MTB_CHIP_SELECT             MTB_SERIAL_MEMORY_CHIP_SELECT_1
+#endif
 
 #define CY_FLASH_SIZEOF_ROW         512UL
 
@@ -124,32 +120,17 @@ cy_rslt_t cy_ota_mem_init( void )
 
 #if defined(COMPONENT_PSE84)
 
-    /* Initialize the QSPI block */
-#if ((DATA_WIDTH_PINS) == (SMIF_DATA_QUAD))
-
-    result = mtb_serial_memory_setup(&sm_obj, MTB_SERIAL_MEMORY_CHIP_SELECT_1, CYBSP_SMIF_CORE_0_XSPI_FLASH_hal_config.base, CYBSP_SMIF_CORE_0_XSPI_FLASH_hal_config.clock, &context, &smif_mem_info, &smif0BlockConfig);
-    if (result != CY_RSLT_SUCCESS)
-    {
-        printf("\nmtb_serial_memory_setup() failed in %s : line %d", __func__, __LINE__);
-    }
-
-#elif ((DATA_WIDTH_PINS) == (SMIF_DATA_OCTAL))
-#if !defined(MTB_HAL)
-        result = cy_serial_flash_qspi_attach(smif0MemConfigs[MEM_SLOT_NUM], CYBSP_OSPI_D0, CYBSP_OSPI_D1,
-                                            CYBSP_OSPI_D2, CYBSP_OSPI_D3, CYBSP_OSPI_D4, CYBSP_OSPI_D5,
-                                           CYBSP_OSPI_D6, CYBSP_OSPI_D7, CYBSP_OSPI_SS);
-#endif
-#else
-    printf("DATA_WIDTH_PINS for external memory undefined");
-#endif
+    /* Initialize the QSPI/OSPI block */
+    result = mtb_serial_memory_setup(&sm_obj, MTB_CHIP_SELECT, CYBSP_SMIF_CORE_0_XSPI_FLASH_hal_config.base, CYBSP_SMIF_CORE_0_XSPI_FLASH_hal_config.clock, &context, &smif_mem_info, &smif0BlockConfig);
 
     if(result == CY_RSLT_SUCCESS)
     {
-        printf("External Memory initialized w/ SFDP.");
+        printf("\nExternal Memory initialized w/ SFDP.");
     }
     else
     {
-        printf("External Memory initialization w/ SFDP FAILED: 0x%" PRIx32 " \r\n", (uint32_t)result);
+        printf("\nmtb_serial_memory_setup() failed in %s : line %d", __func__, __LINE__);
+        printf("\nExternal Memory initialization w/ SFDP FAILED: 0x%" PRIx32 " \r\n", (uint32_t)result);
     }
 #endif /* PSE84 */
     return result;
