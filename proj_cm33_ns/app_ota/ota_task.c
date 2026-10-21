@@ -269,14 +269,12 @@ cy_rslt_t initialize_ota(void)
 
     /* set up MQTT credentials - only used if start_TLS is set */
     memset(&ota_network_params.mqtt.credentials, 0x00, sizeof(ota_network_params.mqtt.credentials ));
-
-    if (strcmp(OTA_MQTT_BROKER,MQTT_BROKER_AWS_URL) == 0 )
-    {
-        mqtt_credentials.username      = MQTT_BROKER_AWS_USERNAME;
-        mqtt_credentials.username_size = strlen(mqtt_credentials.username);
-        mqtt_credentials.password      = MQTT_BROKER_AWS_PASSWORD;
-        mqtt_credentials.password_size = strlen(mqtt_credentials.password);
-    }
+    
+    mqtt_credentials.username      = MQTT_BROKER_AWS_USERNAME;
+    mqtt_credentials.username_size = strlen(mqtt_credentials.username);
+    mqtt_credentials.password      = MQTT_BROKER_AWS_PASSWORD;
+    mqtt_credentials.password_size = strlen(mqtt_credentials.password);
+    
 
     mqtt_credentials.alpnprotos         = NULL;
     mqtt_credentials.alpnprotoslen      = 0;

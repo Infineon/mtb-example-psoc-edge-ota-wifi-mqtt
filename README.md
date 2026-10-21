@@ -1,6 +1,6 @@
 # PSOC&trade; Edge MCU: OTA Wi-Fi MQTT
 
-This code example demonstrates the firmware update of user application over-the-air (OTA) via the Wi-Fi interface using MQTT protocol, using Arm&reg; Cortex&reg; M33 CPU on PSOC&trade; Edge MCU coupled with AIROC&trade; CYW55513 in ModusToolbox&trade; environment.
+This code example demonstrates the firmware update of user application over-the-air (OTA) via the Wi-Fi interface using MQTT protocol, using Arm&reg; Cortex&reg; M33 CPU on PSOC&trade; Edge MCU coupled with AIROC&trade; CYW55513/CYW55512 in ModusToolbox&trade; environment.
 
 The device establishes a connection with the designated MQTT broker – this example uses AWS. It periodically checks the job document to see if a new update is available. When a new update is available, it is downloaded and written to the secondary slot (flash). On the next reboot, the Edge Protect Bootloader handles image verification and upgrades. This example uses overwrite-based upgrade. In an overwrite-based upgrade, the new image from the secondary slot is simply copied to the primary slot after a successful validation.
 
@@ -15,14 +15,14 @@ This example has been tested with the following (out-of-box) configurations:
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-psoc-edge-ota-wifi-mqtt)
 
-[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzk5NDQiLCJTcGVjIE51bWJlciI6IjAwMi0zOTk0NCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBPVEEgV2ktRmkgTVFUVCIsInJpZCI6InZhc3VtYS5uYXJheWFuYUBpbmZpbmVvbi5jb20iLCJEb2MgdmVyc2lvbiI6IjIuMS4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJQU09DIn0=)
+[Provide feedback on this code example.](https://yourvoice.infineon.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyMzk5NDQiLCJTcGVjIE51bWJlciI6IjAwMi0zOTk0NCIsIkRvYyBUaXRsZSI6IlBTT0MmdHJhZGU7IEVkZ2UgTUNVOiBPVEEgV2ktRmkgTVFUVCIsInJpZCI6InZhc3VtYS5uYXJheWFuYUBpbmZpbmVvbi5jb20iLCJEb2MgdmVyc2lvbiI6IjIuMi4wIiwiRG9jIExhbmd1YWdlIjoiRW5nbGlzaCIsIkRvYyBEaXZpc2lvbiI6Ik1DRCIsIkRvYyBCVSI6IklDVyIsIkRvYyBGYW1pbHkiOiJQU09DIn0=)
 
 See the [Design and implementation](docs/design_and_implementation.md) for the functional description of this code example.
 
 
 ## Requirements
 
-- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.7 or later (tested with v3.7)
+- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.8 or later (tested with v3.9)
 - Board support package (BSP) minimum required version: 1.0.0
 - Programming language: C
 - Associated parts: All PSOC&trade; Edge E84 MCU parts
@@ -33,14 +33,15 @@ See the [Design and implementation](docs/design_and_implementation.md) for the f
 
 - GNU Arm&reg; Embedded Compiler v14.2.1 (`GCC_ARM`) – Default value of `TOOLCHAIN`
 - Arm&reg; Compiler v6.22 (`ARM`)
-- IAR C/C++ Compiler v9.50.2 (`IAR`)
-- LLVM Embedded Toolchain for Arm&reg; v19.1.5 (`LLVM_ARM`)
+- IAR C/C++ Compiler v9.70.4 (`IAR`)
+- Arm&reg; Toolchain for Embedded v22.1 (`LLVM_ARM`)
 
 
 ## Supported kits (make variable 'TARGET')
 
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC2`) – Default value of `TARGET`
 - [PSOC&trade; Edge E84 Evaluation Kit](https://www.infineon.com/KIT_PSE84_EVAL) (`KIT_PSE84_EVAL_EPC4`)
+- [PSOC&trade; Edge E846 Evaluation Kit](https://www.infineon.com/KIT_PSE846_EVAL) (`KIT_PSE846_EVAL_EPC2`)
 
 
 ## Hardware setup
@@ -49,7 +50,8 @@ This example uses the board's default configuration. See the kit user guide to e
 
 Ensure the following jumper and pin configuration on the board.
 - The BOOT SW pin (P17.6) is in the LOW/OFF position
-- J20 and J21 are in the tristate/not connected (NC) position
+- J20 and J21 must be in the tristate/not connected (NC) position (for the PSOC&trade; Edge E84 Evaluation Kit)
+- All SW8 DIP switches in OFF position (for the PSOC&trade; Edge E846 Evaluation Kit)
 
 
 ## Software setup
@@ -102,7 +104,7 @@ This example requires no additional software or tools.
 
  4. Download the following certificates and keys that are created and activated in the previous step:
        - A **certificate for the AWS IoT Thing:** *xxxxxxxxxx.aws-client-certificate.crt*
-       - A **private key:** *xxxxxxxxxx.aws-private.key* or *xxxxxxxxxx.aws-private.pem*
+       - A **private key:** *xxxxxxxxxx.aws-private_key.pem*
        - Root CA "RSA 2048 bit key: Amazon Root CA 1" for AWS IoT from [CA certificates for server authentication](https://docs.aws.amazon.com/iot/latest/developerguide/server-authentication.html#server-authentication-certs) - *xxxx.AmazonRootCA1.crt*
 
  5. Copy the certificates and key, paste it in the *\<My-OTA-MQTT-example>/scripts* folder
@@ -110,7 +112,7 @@ This example requires no additional software or tools.
  6. Rename the following file names in the *\<My-OTA-MQTT-example>/scripts* folder
       - *xxxx.AmazonRootCA1.crt* to *amazon_ca.crt*
       - *xxxxxxxxxx.aws-client-certificate.crt* to *amazon_client.crt*
-      - *xxxxxxxxxx.aws-private.key* to *amazon_private.key*
+      - *xxxxxxxxxx.aws-private_key.pem* to *amazon_private_key.pem*
 
  </details>
 
@@ -180,7 +182,7 @@ python format_cert_key.py <one-or-more-file-name-of-certificate-or-key-with-exte
 Example:
 
 ```
-python format_cert_key.py amazon_ca.crt amazon_client.crt amazon_private.pem
+python format_cert_key.py amazon_ca.crt amazon_client.crt amazon_private_key.pem
 ```
 
 12. Copy the string format into the *\<My-OTA-MQTT-example>/proj_cm33_ns/app_ota/configs/ota_app_config.h.* file
@@ -528,7 +530,7 @@ Application notes  | [AN235935](https://www.infineon.com/AN235935) – Getting s
 Code examples  | [Using ModusToolbox&trade;](https://github.com/Infineon/Code-Examples-for-ModusToolbox-Software) on GitHub
 Device documentation | [PSOC&trade; Edge E84 MCU datasheet](https://www.infineon.com/products/microcontroller/32-bit-psoc-arm-cortex/32-bit-psoc-edge-arm/psoc-edge-e84#Documents) <br> [PSOC&trade; Edge E84 MCU reference manuals](https://www.infineon.com/products/microcontroller/32-bit-psoc-arm-cortex/32-bit-psoc-edge-arm/psoc-edge-e84#Documents)
 Development kits | Select your kits from the [Evaluation board finder](https://www.infineon.com/cms/en/design-support/finder-selection-tools/product-finder/evaluation-board)
-Libraries  | [mtb-dsl-pse8xxgp](https://github.com/Infineon/mtb-dsl-pse8xxgp) – Device support library for PSE8XXGP <br> [retarget-io](https://github.com/Infineon/retarget-io) – Utility library to retarget STDIO messages to a UART port <br> [serial-memory](https://github.com/Infineon/serial-memory) - Serial Flash Middleware for External memory interface <br> [DFU](https://github.com/Infineon/dfu) – Device Firmware Update Middleware (DFU MW) <br> [emusb-device](https://github.com/Infineon/emusb-device) – USB Device stack for embedded applications
+Libraries  | [mtb-dsl-pse8xxgp](https://github.com/Infineon/mtb-dsl-pse8xxgp) – Device support library for PSE8XXGP <br> [mtb-dsl-pse8x6](https://github.com/Infineon/mtb-dsl-pse8x6) – Device support library for PSE8X6 <br> [retarget-io](https://github.com/Infineon/retarget-io) – Utility library to retarget STDIO messages to a UART port <br> [serial-memory](https://github.com/Infineon/serial-memory) - Serial Flash Middleware for External memory interface <br> [DFU](https://github.com/Infineon/dfu) – Device Firmware Update Middleware (DFU MW) <br> [emusb-device](https://github.com/Infineon/emusb-device) – USB Device stack for embedded applications
 Tools  | [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) – ModusToolbox&trade; software is a collection of easy-to-use libraries and tools enabling rapid development with Infineon MCUs for applications ranging from wireless and cloud-connected systems, edge AI/ML, embedded sense and control, to wired USB connectivity using PSOC&trade; Industrial/IoT MCUs, AIROC&trade; Wi-Fi and Bluetooth&reg; connectivity devices, XMC&trade; Industrial MCUs, and EZ-USB&trade;/EZ-PD&trade; wired connectivity controllers. ModusToolbox&trade; incorporates a comprehensive set of BSPs, HAL, libraries, configuration tools, and provides support for industry-standard IDEs to fast-track your embedded application development
 
 <br>
@@ -548,6 +550,7 @@ Document title: *CE239944* - *PSOC&trade; Edge MCU: OTA Wi-Fi MQTT*
  1.x.0   | New code example <br> Early access release
  2.0.0   | GitHub release
  2.1.0   | Added instructions to use external Octal SPI (OSPI) flash <br> Added WIFI SDIO DeepSleep Callback <br> Updated design files to fix ModusToolbox™ v3.7 build warnings
+ 2.2.0   | Updated to support wifi-core-freertos-lwip-mbedtls v4.X <br> Updated Makefile to increase the MQTT event thread stack size <br> Added support for KIT_PSE846_EVAL_EPC2
 <br>
 
 
